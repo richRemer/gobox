@@ -7,6 +7,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 	"time"
 
@@ -26,8 +27,8 @@ const (
 func main() {
 	server, err := wish.NewServer(
 		wish.WithAddress(net.JoinHostPort(host, port)),
-		wish.WithHostKeyPath("gobox.key"),
-		wish.WithAuthorizedKeys("authorized_keys"),
+		wish.WithHostKeyPath(filepath.Join("keys", "host")),
+		wish.WithPublicKeyAuth(auth),
 		wish.WithMiddleware(
 			middleware(),
 			activeterm.Middleware(),
