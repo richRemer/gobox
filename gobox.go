@@ -10,13 +10,9 @@ import (
 	"syscall"
 	"time"
 
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/log"
 	"github.com/charmbracelet/ssh"
 	"github.com/charmbracelet/wish"
-	"github.com/charmbracelet/wish/activeterm"
-	"github.com/charmbracelet/wish/bubbletea"
 	"github.com/charmbracelet/wish/elapsed"
 	"github.com/charmbracelet/wish/logging"
 )
@@ -32,8 +28,8 @@ func main() {
 		wish.WithHostKeyPath("gobox.key"),
 		wish.WithAuthorizedKeys("authorized_keys"),
 		wish.WithMiddleware(
-			bubbletea.Middleware(teaHandler),
-			activeterm.Middleware(),
+			middleware(),
+			// activeterm.Middleware(),
 			logging.Middleware(),
 			elapsed.Middleware(),
 		),
@@ -62,28 +58,4 @@ func main() {
 	if err := server.Shutdown(ctx); err != nil && !errors.Is(err, ssh.ErrServerClosed) {
 		log.Error("Could not stop server", "error", err)
 	}
-}
-
-func teaHandler(session ssh.Session) (tea.Model, []tea.ProgramOption) {
-	pty, _, _ := session.Pty()
-	renderer := bubbletea.MakeRenderer(session)
-	txtStyle := renderer.NewStyle().Foreground(lipgloss.Color("10"))
-	quitStyle := renderer.NewStyle().Foreground(lipgloss.Color("8"))
-	bg := "light"
-
-	if renderer.HasDarkBackground() {
-		bg = "dark"
-	}
-
-	m := model{
-		term:      pty.Term,
-		profile:   renderer.ColorProfile().Name(),
-		width:     pty.Window.Width,
-		height:    pty.Window.Height,
-		bg:        bg,
-		txtStyle:  txtStyle,
-		quitStyle: quitStyle,
-	}
-
-	return m, []tea.ProgramOption{tea.WithAltScreen()}
 }

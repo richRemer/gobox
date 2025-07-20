@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -9,12 +10,12 @@ import (
 
 type model struct {
 	term      string
-	profile   string
 	width     int
 	height    int
+	time      time.Time
 	bg        string
-	txtStyle  lipgloss.Style
-	quitStyle lipgloss.Style
+	mainStyle lipgloss.Style
+	infoStyle lipgloss.Style
 }
 
 func (m model) Init() tea.Cmd {
@@ -23,6 +24,8 @@ func (m model) Init() tea.Cmd {
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case time.Time:
+		m.time = time.Time(msg)
 	case tea.WindowSizeMsg:
 		m.height = msg.Height
 		m.width = msg.Width
@@ -37,6 +40,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() string {
-	str := fmt.Sprintf("Your term is %s\nYour window size is %dx%d\nBackground: %s\nColor Profile: %s", m.term, m.width, m.height, m.bg, m.profile)
-	return m.txtStyle.Render(str) + "\n\n" + m.quitStyle.Render("Press 'q' to quit\n")
+	text := "Your term is %s\n"
+	text += "Your window size is x: %d, y: %d\n"
+	text += "Background: %s\n"
+	text += "Time: " + m.time.Format(time.RFC1123) + "\n"
+
+	main := fmt.Sprintf(text, m.term, m.width, m.height, m.bg)
+	quit := "Press 'q' to quit\n"
+	info := lipgloss.Place(m.width, m.height-6, lipgloss.Center, lipgloss.Bottom, quit)
+
+	return m.mainStyle.Render(main) + "\n\n" + m.infoStyle.Render(info)
 }
