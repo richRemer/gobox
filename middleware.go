@@ -25,7 +25,7 @@ func middleware() wish.Middleware {
 		return program
 	}
 
-	teaHandler := func(session ssh.Session) *tea.Program {
+	handler := func(session ssh.Session) *tea.Program {
 		pty, _, _ := session.Pty()
 		renderer := bubbletea.MakeRenderer(session)
 		mainStyle := renderer.NewStyle().Foreground(lipgloss.Color("10"))
@@ -36,7 +36,7 @@ func middleware() wish.Middleware {
 			bg = "dark"
 		}
 
-		m := model{
+		model := terminal{
 			term:      pty.Term,
 			width:     pty.Window.Width,
 			height:    pty.Window.Height,
@@ -46,8 +46,10 @@ func middleware() wish.Middleware {
 			infoStyle: infoStyle,
 		}
 
-		return program(m, append(bubbletea.MakeOptions(session), tea.WithAltScreen())...)
+		options := append(bubbletea.MakeOptions(session), tea.WithAltScreen())
+
+		return program(model, options...)
 	}
 
-	return bubbletea.MiddlewareWithProgramHandler(teaHandler, termenv.ANSI256)
+	return bubbletea.MiddlewareWithProgramHandler(handler, termenv.ANSI256)
 }
