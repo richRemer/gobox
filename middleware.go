@@ -12,8 +12,8 @@ import (
 )
 
 func middleware() wish.Middleware {
-	program := func(m tea.Model, options ...tea.ProgramOption) *tea.Program {
-		program := tea.NewProgram(m, options...)
+	program := func(model tea.Model, options ...tea.ProgramOption) *tea.Program {
+		program := tea.NewProgram(model, options...)
 
 		go func() {
 			for {
