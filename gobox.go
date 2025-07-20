@@ -13,6 +13,7 @@ import (
 	"github.com/charmbracelet/log"
 	"github.com/charmbracelet/ssh"
 	"github.com/charmbracelet/wish"
+	"github.com/charmbracelet/wish/activeterm"
 	"github.com/charmbracelet/wish/elapsed"
 	"github.com/charmbracelet/wish/logging"
 )
@@ -29,7 +30,7 @@ func main() {
 		wish.WithAuthorizedKeys("authorized_keys"),
 		wish.WithMiddleware(
 			middleware(),
-			// activeterm.Middleware(),
+			activeterm.Middleware(),
 			logging.Middleware(),
 			elapsed.Middleware(),
 		),

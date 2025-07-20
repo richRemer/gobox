@@ -26,7 +26,7 @@ func middleware() wish.Middleware {
 	}
 
 	teaHandler := func(session ssh.Session) *tea.Program {
-		pty, _, active := session.Pty()
+		pty, _, _ := session.Pty()
 		renderer := bubbletea.MakeRenderer(session)
 		mainStyle := renderer.NewStyle().Foreground(lipgloss.Color("10"))
 		infoStyle := renderer.NewStyle().Foreground(lipgloss.Color("8"))
@@ -34,10 +34,6 @@ func middleware() wish.Middleware {
 
 		if renderer.HasDarkBackground() {
 			bg = "dark"
-		}
-
-		if !active {
-			wish.Fatalln(session, "no active terminal, skipping")
 		}
 
 		m := model{
