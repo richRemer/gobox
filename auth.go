@@ -8,28 +8,30 @@ import (
 	"github.com/charmbracelet/ssh"
 )
 
-func auth(ctx ssh.Context, key ssh.PublicKey) bool {
-	file := filepath.Join("keys", ctx.User()+"_keys")
-	bytes, err := os.ReadFile(file)
-
-	if err != nil {
-		return false
-	}
-
-	keys := map[string]ssh.PublicKey{}
-
-	for len(bytes) > 0 {
-		pub, _, _, rest, err := ssh.ParseAuthorizedKey(bytes)
+func auth(dir string) ssh.PublicKeyHandler {
+	return func(ctx ssh.Context, key ssh.PublicKey) bool {
+		file := filepath.Join(dir, ctx.User()+"_keys")
+		bytes, err := os.ReadFile(file)
 
 		if err != nil {
-			log.Error("Failed to parse %s: %v", file, err)
 			return false
 		}
 
-		keys[string(pub.Marshal())] = pub
-		bytes = rest
-	}
+		keys := map[string]ssh.PublicKey{}
 
-	_, ok := keys[string(key.Marshal())]
-	return ok
+		for len(bytes) > 0 {
+			pub, _, _, rest, err := ssh.ParseAuthorizedKey(bytes)
+
+			if err != nil {
+				log.Error("Failed to parse %s: %v", file, err)
+				return false
+			}
+
+			keys[string(pub.Marshal())] = pub
+			bytes = rest
+		}
+
+		_, ok := keys[string(key.Marshal())]
+		return ok
+	}
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	_ "embed"
 	"errors"
+	"flag"
 	"net"
 	"os"
 	"os/signal"
@@ -25,10 +26,16 @@ const (
 )
 
 func main() {
+	var configdir string
+
+	flag.StringVar(&configdir, "dir", ".", "configuration directory")
+	flag.StringVar(&configdir, "C", ".", "configuration directory (shorthand)")
+	flag.Parse()
+
 	server, err := wish.NewServer(
 		wish.WithAddress(net.JoinHostPort(host, port)),
-		wish.WithHostKeyPath(filepath.Join("keys", "host")),
-		wish.WithPublicKeyAuth(auth),
+		wish.WithHostKeyPath(filepath.Join(configdir, "host_key")),
+		wish.WithPublicKeyAuth(auth(configdir)),
 		wish.WithMiddleware(
 			middleware(),
 			activeterm.Middleware(),

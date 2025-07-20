@@ -27,15 +27,16 @@ First, generate a host key for gobox.
 
 ```sh
 cd $GOBOX_ROOT
-ssh-keygen -qN "" -ted25519 -f gobox.key
+ssh-keygen -qN "" -ted25519 -f host_key
 ```
 
 Next, configure authorized keys.
 
 ```sh
+USER=$(id -un)
 cd $GOBOX_ROOT
-cat ~/.ssh/id_rsa.pub authorized_keys
-chmod 600 authorized_keys
+cp ~/.ssh/id_rsa.pub ${USER}_keys
+chmod 600 ${USER}_keys
 ```
 
 Run
