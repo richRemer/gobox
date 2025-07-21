@@ -49,18 +49,22 @@ func (app application) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (app application) View() string {
+	main := app.statusView()
+	help := app.help.View(app.keys)
+
+	mainView := app.mainStyle.Render(main)
+	helpView := app.helpStyle.Render(lipgloss.Place(app.width, 1, 0.5, 0.5, help))
+	space := app.height - strings.Count(mainView, "\n") - strings.Count(helpView, "\n") - 1
+	spacing := strings.Repeat("\n", space)
+
+	return mainView + spacing + helpView
+}
+
+func (app application) statusView() string {
 	text := "Your term is %s\n"
 	text += "Your window size is x: %d, y: %d\n"
 	text += "Background: %s\n"
 	text += "Time: " + app.time.Format(time.DateTime) + "\n"
 
-	main := fmt.Sprintf(text, app.term, app.width, app.height, app.bg)
-	help := app.help.View(app.keys)
-
-	mainView := app.mainStyle.Render(main)
-	helpView := app.helpStyle.Render(lipgloss.Place(app.width, 1, 0.5, 0.5, help))
-	space := app.height - strings.Count(mainView, "\n") - strings.Count(helpView, "\n")
-	spacing := strings.Repeat("\n", space)
-
-	return mainView + spacing + helpView
+	return fmt.Sprintf(text, app.term, app.width, app.height, app.bg)
 }
