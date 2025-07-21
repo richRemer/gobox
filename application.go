@@ -15,6 +15,7 @@ type application struct {
 	height    int
 	time      time.Time
 	bg        string
+	keys      keymap
 	mainStyle lipgloss.Style
 	infoStyle lipgloss.Style
 }
@@ -32,7 +33,7 @@ func (app application) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		app.width = msg.Width
 	case tea.KeyMsg:
 		switch {
-		case key.Matches(msg, activeKeyMap.Quit):
+		case key.Matches(msg, app.keys.Quit):
 			return app, tea.Quit
 		}
 	}

@@ -42,6 +42,7 @@ func middleware() wish.Middleware {
 			height:    pty.Window.Height,
 			time:      time.Now(),
 			bg:        bg,
+			keys:      activeKeyMap,
 			mainStyle: mainStyle,
 			infoStyle: infoStyle,
 		}
