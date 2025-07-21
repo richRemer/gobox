@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
@@ -30,8 +31,8 @@ func (term terminal) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		term.height = msg.Height
 		term.width = msg.Width
 	case tea.KeyMsg:
-		switch msg.String() {
-		case "q", "ctrl+c":
+		switch {
+		case key.Matches(msg, activeKeyMap.Quit):
 			return term, tea.Quit
 		}
 	}
