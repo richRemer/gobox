@@ -12,7 +12,7 @@ clean:
 install: $(bin)/$(name)
 	cp $< $(prefix)/bin/$(name)
 
-$(bin)/$(name):
+$(bin)/$(name): $(wildcard *.go)
 	@mkdir -p $(@D)
 	go build -o $@
 
