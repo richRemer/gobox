@@ -3,6 +3,7 @@ package main
 import (
 	"time"
 
+	"github.com/charmbracelet/bubbles/help"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/ssh"
@@ -28,6 +29,7 @@ func middleware() wish.Middleware {
 	handler := func(session ssh.Session) *tea.Program {
 		pty, _, _ := session.Pty()
 		renderer := bubbletea.MakeRenderer(session)
+		keyStyle := renderer.NewStyle().Bold(true).Foreground(lipgloss.Color("15"))
 		mainStyle := renderer.NewStyle().Foreground(lipgloss.Color("10"))
 		infoStyle := renderer.NewStyle().Foreground(lipgloss.Color("8"))
 		bg := "light"
@@ -43,9 +45,18 @@ func middleware() wish.Middleware {
 			time:      time.Now(),
 			bg:        bg,
 			keys:      activeKeyMap,
+			help:      help.New(),
 			mainStyle: mainStyle,
 			infoStyle: infoStyle,
 		}
+
+		model.help.Styles.Ellipsis = infoStyle
+		model.help.Styles.FullDesc = infoStyle
+		model.help.Styles.FullKey = keyStyle
+		model.help.Styles.FullSeparator = infoStyle
+		model.help.Styles.ShortDesc = infoStyle
+		model.help.Styles.ShortKey = keyStyle
+		model.help.Styles.ShortSeparator = infoStyle
 
 		options := append(bubbletea.MakeOptions(session), tea.WithAltScreen())
 
