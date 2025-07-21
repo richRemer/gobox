@@ -9,7 +9,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-type terminal struct {
+type application struct {
 	term      string
 	width     int
 	height    int
@@ -19,36 +19,36 @@ type terminal struct {
 	infoStyle lipgloss.Style
 }
 
-func (term terminal) Init() tea.Cmd {
+func (app application) Init() tea.Cmd {
 	return nil
 }
 
-func (term terminal) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (app application) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case time.Time:
-		term.time = time.Time(msg)
+		app.time = time.Time(msg)
 	case tea.WindowSizeMsg:
-		term.height = msg.Height
-		term.width = msg.Width
+		app.height = msg.Height
+		app.width = msg.Width
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, activeKeyMap.Quit):
-			return term, tea.Quit
+			return app, tea.Quit
 		}
 	}
 
-	return term, nil
+	return app, nil
 }
 
-func (term terminal) View() string {
+func (app application) View() string {
 	text := "Your term is %s\n"
 	text += "Your window size is x: %d, y: %d\n"
 	text += "Background: %s\n"
-	text += "Time: " + term.time.Format(time.RFC1123) + "\n"
+	text += "Time: " + app.time.Format(time.RFC1123) + "\n"
 
-	main := fmt.Sprintf(text, term.term, term.width, term.height, term.bg)
+	main := fmt.Sprintf(text, app.term, app.width, app.height, app.bg)
 	quit := "Press 'q' to quit\n"
-	info := lipgloss.Place(term.width, term.height-6, lipgloss.Center, lipgloss.Bottom, quit)
+	info := lipgloss.Place(app.width, app.height-6, lipgloss.Center, lipgloss.Bottom, quit)
 
-	return term.mainStyle.Render(main) + "\n\n" + term.infoStyle.Render(info)
+	return app.mainStyle.Render(main) + "\n\n" + app.infoStyle.Render(info)
 }

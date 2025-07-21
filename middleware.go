@@ -36,7 +36,7 @@ func middleware() wish.Middleware {
 			bg = "dark"
 		}
 
-		model := terminal{
+		model := application{
 			term:      pty.Term,
 			width:     pty.Window.Width,
 			height:    pty.Window.Height,
