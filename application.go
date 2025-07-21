@@ -21,6 +21,7 @@ type application struct {
 	help      help.Model
 	mainStyle lipgloss.Style
 	infoStyle lipgloss.Style
+	helpStyle lipgloss.Style
 }
 
 func (app application) Init() tea.Cmd {
@@ -51,12 +52,15 @@ func (app application) View() string {
 	text := "Your term is %s\n"
 	text += "Your window size is x: %d, y: %d\n"
 	text += "Background: %s\n"
-	text += "Time: " + app.time.Format(time.RFC1123) + "\n"
+	text += "Time: " + app.time.Format(time.DateTime) + "\n"
 
 	main := fmt.Sprintf(text, app.term, app.width, app.height, app.bg)
-	help := lipgloss.Place(app.width, 1, 0.5, 0.5, app.help.View(app.keys))
+	help := app.help.View(app.keys)
 
-	empty := app.height - strings.Count(text, "\n") - strings.Count(help, "\n")
+	mainView := app.mainStyle.Render(main)
+	helpView := app.helpStyle.Render(lipgloss.Place(app.width, 1, 0.5, 0.5, help))
+	space := app.height - strings.Count(mainView, "\n") - strings.Count(helpView, "\n")
+	spacing := strings.Repeat("\n", space)
 
-	return app.mainStyle.Render(main) + strings.Repeat("\n", empty) + help
+	return mainView + spacing + helpView
 }

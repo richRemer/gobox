@@ -32,6 +32,7 @@ func middleware() wish.Middleware {
 		keyStyle := renderer.NewStyle().Bold(true).Foreground(lipgloss.Color("15"))
 		mainStyle := renderer.NewStyle().Foreground(lipgloss.Color("10"))
 		infoStyle := renderer.NewStyle().Foreground(lipgloss.Color("8"))
+		helpStyle := renderer.NewStyle().Border(lipgloss.NormalBorder(), true, false, false)
 		bg := "light"
 
 		if renderer.HasDarkBackground() {
@@ -48,6 +49,7 @@ func middleware() wish.Middleware {
 			help:      help.New(),
 			mainStyle: mainStyle,
 			infoStyle: infoStyle,
+			helpStyle: helpStyle,
 		}
 
 		model.help.Styles.Ellipsis = infoStyle
