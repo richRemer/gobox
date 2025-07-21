@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"strconv"
 	"syscall"
 	"time"
 
@@ -22,18 +23,20 @@ import (
 
 const (
 	host = "localhost"
-	port = "2345"
 )
 
 func main() {
 	var configdir string
+	var port int
 
 	flag.StringVar(&configdir, "dir", ".", "configuration directory")
-	flag.StringVar(&configdir, "C", ".", "configuration directory (shorthand)")
+	flag.StringVar(&configdir, "C", ".", "configuration directory")
+	flag.IntVar(&port, "port", 22, "listen port for incoming connection")
+	flag.IntVar(&port, "p", 22, "listen port for incoming connection")
 	flag.Parse()
 
 	server, err := wish.NewServer(
-		wish.WithAddress(net.JoinHostPort(host, port)),
+		wish.WithAddress(net.JoinHostPort(host, strconv.Itoa(port))),
 		wish.WithHostKeyPath(filepath.Join(configdir, "host_key")),
 		wish.WithPublicKeyAuth(auth(configdir)),
 		wish.WithMiddleware(
