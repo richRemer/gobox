@@ -11,17 +11,28 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+type appview int
+
+const (
+	splash appview = 1
+	status appview = 2
+)
+
 type application struct {
-	term      string
-	width     int
-	height    int
-	time      time.Time
-	bg        string
-	keys      keymap
-	help      help.Model
-	mainStyle lipgloss.Style
-	infoStyle lipgloss.Style
-	helpStyle lipgloss.Style
+	version     string
+	term        string
+	width       int
+	height      int
+	time        time.Time
+	bg          string
+	view        appview
+	keys        keymap
+	help        help.Model
+	splashTime  int
+	mainStyle   lipgloss.Style
+	infoStyle   lipgloss.Style
+	actionStyle lipgloss.Style
+	helpStyle   lipgloss.Style
 }
 
 func (app application) Init() tea.Cmd {
@@ -32,6 +43,11 @@ func (app application) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case time.Time:
 		app.time = time.Time(msg)
+		app.splashTime--
+
+		if app.splashTime == 0 {
+			app.view = status
+		}
 	case tea.WindowSizeMsg:
 		app.height = msg.Height
 		app.width = msg.Width
@@ -49,15 +65,35 @@ func (app application) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (app application) View() string {
-	main := app.statusView()
+	switch app.view {
+	case splash:
+		return app.splashView()
+	case status:
+		return app.layoutView(app.statusView())
+	default:
+		return "missing view"
+	}
+}
+
+func (app application) layoutView(inner string) string {
+	help := app.helpView()
+	padSize := app.height - strings.Count(inner, "\n") - strings.Count(help, "\n") - 1
+	padding := strings.Repeat("\n", padSize)
+
+	return inner + padding + help
+}
+
+func (app application) helpView() string {
 	help := app.help.View(app.keys)
 
-	mainView := app.mainStyle.Render(main)
-	helpView := app.helpStyle.Render(lipgloss.Place(app.width, 1, 0.5, 0.5, help))
-	space := app.height - strings.Count(mainView, "\n") - strings.Count(helpView, "\n") - 1
-	spacing := strings.Repeat("\n", space)
+	return app.helpStyle.Render(lipgloss.Place(app.width, 1, 0.5, 0.5, help))
+}
 
-	return mainView + spacing + helpView
+func (app application) splashView() string {
+	title := app.actionStyle.Render("GOBOX")
+	version := app.infoStyle.Render("v" + app.version)
+
+	return lipgloss.Place(app.width, app.height, 0.5, 0.5, title+" "+version)
 }
 
 func (app application) statusView() string {
@@ -66,5 +102,7 @@ func (app application) statusView() string {
 	text += "Background: %s\n"
 	text += "Time: " + app.time.Format(time.DateTime) + "\n"
 
-	return fmt.Sprintf(text, app.term, app.width, app.height, app.bg)
+	view := fmt.Sprintf(text, app.term, app.width, app.height, app.bg)
+
+	return app.mainStyle.Render(view)
 }

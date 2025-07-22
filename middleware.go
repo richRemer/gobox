@@ -29,9 +29,9 @@ func middleware() wish.Middleware {
 	handler := func(session ssh.Session) *tea.Program {
 		pty, _, _ := session.Pty()
 		renderer := bubbletea.MakeRenderer(session)
-		keyStyle := renderer.NewStyle().Bold(true).Foreground(lipgloss.Color("15"))
 		mainStyle := renderer.NewStyle().Foreground(lipgloss.Color("10"))
 		infoStyle := renderer.NewStyle().Foreground(lipgloss.Color("8"))
+		actionStyle := renderer.NewStyle().Bold(true).Foreground(lipgloss.Color("15"))
 		helpStyle := renderer.NewStyle().Border(lipgloss.NormalBorder(), true, false, false)
 		bg := "light"
 
@@ -40,24 +40,28 @@ func middleware() wish.Middleware {
 		}
 
 		model := application{
-			term:      pty.Term,
-			width:     pty.Window.Width,
-			height:    pty.Window.Height,
-			time:      time.Now(),
-			bg:        bg,
-			keys:      activeKeyMap,
-			help:      help.New(),
-			mainStyle: mainStyle,
-			infoStyle: infoStyle,
-			helpStyle: helpStyle,
+			version:     "0.0.1-alpha1",
+			term:        pty.Term,
+			width:       pty.Window.Width,
+			height:      pty.Window.Height,
+			time:        time.Now(),
+			bg:          bg,
+			view:        splash,
+			keys:        activeKeyMap,
+			help:        help.New(),
+			splashTime:  2,
+			mainStyle:   mainStyle,
+			infoStyle:   infoStyle,
+			actionStyle: actionStyle,
+			helpStyle:   helpStyle,
 		}
 
 		model.help.Styles.Ellipsis = infoStyle
 		model.help.Styles.FullDesc = infoStyle
-		model.help.Styles.FullKey = keyStyle
+		model.help.Styles.FullKey = actionStyle
 		model.help.Styles.FullSeparator = infoStyle
 		model.help.Styles.ShortDesc = infoStyle
-		model.help.Styles.ShortKey = keyStyle
+		model.help.Styles.ShortKey = actionStyle
 		model.help.Styles.ShortSeparator = infoStyle
 
 		options := append(bubbletea.MakeOptions(session), tea.WithAltScreen())
