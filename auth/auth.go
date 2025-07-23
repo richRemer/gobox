@@ -1,4 +1,4 @@
-package main
+package auth
 
 import (
 	"os"
@@ -8,7 +8,7 @@ import (
 	"github.com/charmbracelet/ssh"
 )
 
-func auth(dir string) ssh.PublicKeyHandler {
+func Handler(dir string) ssh.PublicKeyHandler {
 	return func(ctx ssh.Context, key ssh.PublicKey) bool {
 		file := filepath.Join(dir, ctx.User()+"_keys")
 		bytes, err := os.ReadFile(file)

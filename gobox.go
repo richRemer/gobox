@@ -4,6 +4,7 @@ import (
 	"context"
 	_ "embed"
 	"errors"
+	"local/gobox/auth"
 	"local/gobox/cli"
 	"local/gobox/repo"
 	"net"
@@ -43,7 +44,7 @@ func main() {
 	server, err := wish.NewServer(
 		wish.WithAddress(net.JoinHostPort(host, strconv.Itoa(opts.Port))),
 		wish.WithHostKeyPath(filepath.Join(opts.WorkingDir, opts.HostKeyFile)),
-		wish.WithPublicKeyAuth(auth(filepath.Join(opts.WorkingDir, opts.KeysDir))),
+		wish.WithPublicKeyAuth(auth.Handler(filepath.Join(opts.WorkingDir, opts.KeysDir))),
 		wish.WithMiddleware(
 			middleware(),
 			activeterm.Middleware(),
