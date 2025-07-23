@@ -1,4 +1,4 @@
-package main
+package cli
 
 import (
 	"flag"
@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-type options struct {
+type Options struct {
 	WorkingDir  string
 	KeysDir     string
 	HostKeyFile string
@@ -14,8 +14,8 @@ type options struct {
 	DB          string
 }
 
-func getopts() options {
-	var opts options
+func GetOptions() Options {
+	var opts Options
 	cwd, err := os.Getwd()
 
 	if err != nil {

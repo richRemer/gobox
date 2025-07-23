@@ -4,6 +4,7 @@ import (
 	"context"
 	_ "embed"
 	"errors"
+	"local/gobox/cli"
 	"net"
 	"os"
 	"os/signal"
@@ -25,7 +26,7 @@ const (
 )
 
 func main() {
-	opts := getopts()
+	opts := cli.GetOptions()
 	users, err := openUsers(opts.DB)
 	defer users.close()
 
