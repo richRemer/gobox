@@ -19,7 +19,7 @@ func GetOptions() Options {
 	cwd, err := os.Getwd()
 
 	if err != nil {
-		log.Println("Could not get working directory.")
+		log.Fatal("Could not get working directory.")
 	}
 
 	flag.StringVar(&opts.WorkingDir, "d", cwd, "working directory")
