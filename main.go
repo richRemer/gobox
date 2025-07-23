@@ -41,7 +41,7 @@ func main() {
 
 	defer users.Close()
 
-	if err := users.InitSchema(); err != nil {
+	if err := users.InitSchemaIfNeeded(); err != nil {
 		log.Fatal("Could not initialize database", "error", err)
 	}
 

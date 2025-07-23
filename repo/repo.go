@@ -32,3 +32,20 @@ func (users UserRepo) InitSchema() error {
 	_, err := users.db.Exec(schema)
 	return err
 }
+
+func (users UserRepo) InitSchemaIfNeeded() error {
+	query := `
+		select name from sqlite_master
+		where type = 'table' and name = 'user'`
+
+	row := users.db.QueryRow(query)
+
+	switch err := row.Scan(); err {
+	case sql.ErrNoRows:
+		return users.InitSchema()
+	case nil:
+		return nil
+	default:
+		return err
+	}
+}
