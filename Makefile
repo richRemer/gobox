@@ -1,18 +1,17 @@
-name = gobox
-bin = bin
+bin = gobox
 prefix = /usr/local
 
 default: build
 
-build: $(bin)/$(name)
+build: $(bin)
 
 clean:
 	rm -rf $(bin)
 
-install: $(bin)/$(name)
+install: $(bin)
 	cp $< $(prefix)/bin/$(name)
 
-$(bin)/$(name): $(wildcard *.go)
+$(bin): $(wildcard *.go)
 	@mkdir -p $(@D)
 	go build -o $@
 
