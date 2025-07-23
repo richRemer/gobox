@@ -24,13 +24,9 @@ import (
 	"github.com/charmbracelet/wish/logging"
 )
 
-const (
-	host = "localhost"
-)
-
 func main() {
 	opts := cli.GetOptions()
-	listenAddr := net.JoinHostPort(host, strconv.Itoa(opts.Port))
+	listenAddr := net.JoinHostPort(opts.Host, strconv.Itoa(opts.Port))
 	hostKeyFile := filepath.Join(opts.WorkingDir, opts.HostKeyFile)
 	keysDir := filepath.Join(opts.WorkingDir, opts.KeysDir)
 	users, err := repo.OpenUsers(opts.DB)
@@ -63,7 +59,7 @@ func main() {
 
 	done := make(chan os.Signal, 1)
 	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
-	log.Info("Starting SSH server", "host", host, "port", opts.Port)
+	log.Info("Starting SSH server", "host", opts.Host, "port", opts.Port)
 
 	go func() {
 		if err = server.ListenAndServe(); err != nil && !errors.Is(err, ssh.ErrServerClosed) {
