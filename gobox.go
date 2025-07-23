@@ -26,6 +26,16 @@ const (
 
 func main() {
 	opts := getopts()
+	users, err := openUsers(opts.DB)
+	defer users.close()
+
+	if err != nil {
+		log.Fatal("Could not open user database", "error", err)
+	}
+
+	if err := users.initSchema(); err != nil {
+		log.Fatal("Could not initialize database", "error", err)
+	}
 
 	server, err := wish.NewServer(
 		wish.WithAddress(net.JoinHostPort(host, strconv.Itoa(opts.Port))),

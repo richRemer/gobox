@@ -11,6 +11,7 @@ type options struct {
 	KeysDir     string
 	HostKeyFile string
 	Port        int
+	DB          string
 }
 
 func getopts() options {
@@ -25,6 +26,7 @@ func getopts() options {
 	flag.StringVar(&opts.KeysDir, "k", ".", "user keys directory")
 	flag.StringVar(&opts.HostKeyFile, "h", "host_key", "host key file")
 	flag.IntVar(&opts.Port, "p", 22, "listen port")
+	flag.StringVar(&opts.DB, "D", ":memory:", "database name or path")
 	flag.Parse()
 
 	return opts
