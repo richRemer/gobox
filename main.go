@@ -30,6 +30,9 @@ const (
 
 func main() {
 	opts := cli.GetOptions()
+	listenAddr := net.JoinHostPort(host, strconv.Itoa(opts.Port))
+	hostKeyFile := filepath.Join(opts.WorkingDir, opts.HostKeyFile)
+	keysDir := filepath.Join(opts.WorkingDir, opts.KeysDir)
 	users, err := repo.OpenUsers(opts.DB)
 
 	if err != nil {
@@ -43,9 +46,9 @@ func main() {
 	}
 
 	server, err := wish.NewServer(
-		wish.WithAddress(net.JoinHostPort(host, strconv.Itoa(opts.Port))),
-		wish.WithHostKeyPath(filepath.Join(opts.WorkingDir, opts.HostKeyFile)),
-		wish.WithPublicKeyAuth(auth.Handler(filepath.Join(opts.WorkingDir, opts.KeysDir))),
+		wish.WithAddress(listenAddr),
+		wish.WithHostKeyPath(hostKeyFile),
+		wish.WithPublicKeyAuth(auth.Handler(keysDir)),
 		wish.WithMiddleware(
 			app.Middleware(),
 			activeterm.Middleware(),
