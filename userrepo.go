@@ -8,7 +8,7 @@ import (
 )
 
 //go:embed schema/gobox.sql
-var query string
+var schema string
 
 type userrepo struct {
 	db *sql.DB
@@ -21,11 +21,7 @@ func openUsers(dsn string) (*userrepo, error) {
 		return nil, err
 	}
 
-	repo := &userrepo{
-		db: db,
-	}
-
-	return repo, nil
+	return &userrepo{db: db}, nil
 }
 
 func (users userrepo) close() {
@@ -33,6 +29,6 @@ func (users userrepo) close() {
 }
 
 func (users userrepo) initSchema() error {
-	_, err := users.db.Exec(query)
+	_, err := users.db.Exec(schema)
 	return err
 }
