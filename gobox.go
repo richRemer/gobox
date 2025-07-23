@@ -4,7 +4,6 @@ import (
 	"context"
 	_ "embed"
 	"errors"
-	"flag"
 	"net"
 	"os"
 	"os/signal"
@@ -26,19 +25,12 @@ const (
 )
 
 func main() {
-	var configdir string
-	var port int
-
-	flag.StringVar(&configdir, "dir", ".", "configuration directory")
-	flag.StringVar(&configdir, "C", ".", "configuration directory")
-	flag.IntVar(&port, "port", 22, "listen port for incoming connection")
-	flag.IntVar(&port, "p", 22, "listen port for incoming connection")
-	flag.Parse()
+	opts := getopts()
 
 	server, err := wish.NewServer(
-		wish.WithAddress(net.JoinHostPort(host, strconv.Itoa(port))),
-		wish.WithHostKeyPath(filepath.Join(configdir, "host_key")),
-		wish.WithPublicKeyAuth(auth(configdir)),
+		wish.WithAddress(net.JoinHostPort(host, strconv.Itoa(opts.Port))),
+		wish.WithHostKeyPath(filepath.Join(opts.WorkingDir, opts.HostKeyFile)),
+		wish.WithPublicKeyAuth(auth(filepath.Join(opts.WorkingDir, opts.KeysDir))),
 		wish.WithMiddleware(
 			middleware(),
 			activeterm.Middleware(),
@@ -53,7 +45,7 @@ func main() {
 
 	done := make(chan os.Signal, 1)
 	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
-	log.Info("Starting SSH server", "host", host, "port", port)
+	log.Info("Starting SSH server", "host", host, "port", opts.Port)
 
 	go func() {
 		if err = server.ListenAndServe(); err != nil && !errors.Is(err, ssh.ErrServerClosed) {
