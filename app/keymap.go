@@ -1,26 +1,26 @@
-package main
+package app
 
 import "github.com/charmbracelet/bubbles/key"
 
-type keymap struct {
+type KeyMap struct {
 	Help key.Binding
 	Load key.Binding
 	New  key.Binding
 	Quit key.Binding
 }
 
-func (keys keymap) ShortHelp() []key.Binding {
+func (keys KeyMap) ShortHelp() []key.Binding {
 	return []key.Binding{keys.New, keys.Load, keys.Quit}
 }
 
-func (keys keymap) FullHelp() [][]key.Binding {
+func (keys KeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
 		{keys.New, keys.Load, keys.Quit},
 		{keys.Help},
 	}
 }
 
-var activeKeyMap = keymap{
+var ActiveKeyMap = KeyMap{
 	Help: key.NewBinding(
 		key.WithKeys("?"),
 		key.WithHelp("?", "help"),

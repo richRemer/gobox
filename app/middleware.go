@@ -1,4 +1,4 @@
-package main
+package app
 
 import (
 	"time"
@@ -12,7 +12,7 @@ import (
 	"github.com/muesli/termenv"
 )
 
-func middleware() wish.Middleware {
+func Middleware() wish.Middleware {
 	program := func(model tea.Model, options ...tea.ProgramOption) *tea.Program {
 		program := tea.NewProgram(model, options...)
 
@@ -39,7 +39,7 @@ func middleware() wish.Middleware {
 			bg = "dark"
 		}
 
-		model := application{
+		model := Model{
 			version:     "0.0.1-alpha1",
 			term:        pty.Term,
 			width:       pty.Window.Width,
@@ -47,7 +47,7 @@ func middleware() wish.Middleware {
 			time:        time.Now(),
 			bg:          bg,
 			view:        splash,
-			keys:        activeKeyMap,
+			keys:        ActiveKeyMap,
 			help:        help.New(),
 			splashTime:  2,
 			mainStyle:   mainStyle,

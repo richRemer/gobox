@@ -4,6 +4,7 @@ import (
 	"context"
 	_ "embed"
 	"errors"
+	"local/gobox/app"
 	"local/gobox/auth"
 	"local/gobox/cli"
 	"local/gobox/repo"
@@ -46,7 +47,7 @@ func main() {
 		wish.WithHostKeyPath(filepath.Join(opts.WorkingDir, opts.HostKeyFile)),
 		wish.WithPublicKeyAuth(auth.Handler(filepath.Join(opts.WorkingDir, opts.KeysDir))),
 		wish.WithMiddleware(
-			middleware(),
+			app.Middleware(),
 			activeterm.Middleware(),
 			logging.Middleware(),
 			elapsed.Middleware(),
