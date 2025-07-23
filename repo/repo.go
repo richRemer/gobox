@@ -1,4 +1,4 @@
-package main
+package repo
 
 import (
 	"database/sql"
@@ -10,25 +10,25 @@ import (
 //go:embed schema/gobox.sql
 var schema string
 
-type userrepo struct {
+type UserRepo struct {
 	db *sql.DB
 }
 
-func openUsers(dsn string) (*userrepo, error) {
+func OpenUsers(dsn string) (*UserRepo, error) {
 	db, err := sql.Open("sqlite", dsn)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return &userrepo{db: db}, nil
+	return &UserRepo{db: db}, nil
 }
 
-func (users userrepo) close() {
+func (users UserRepo) Close() {
 	users.db.Close()
 }
 
-func (users userrepo) initSchema() error {
+func (users UserRepo) InitSchema() error {
 	_, err := users.db.Exec(schema)
 	return err
 }

@@ -5,6 +5,7 @@ import (
 	_ "embed"
 	"errors"
 	"local/gobox/cli"
+	"local/gobox/repo"
 	"net"
 	"os"
 	"os/signal"
@@ -27,14 +28,15 @@ const (
 
 func main() {
 	opts := cli.GetOptions()
-	users, err := openUsers(opts.DB)
-	defer users.close()
+	users, err := repo.OpenUsers(opts.DB)
 
 	if err != nil {
 		log.Fatal("Could not open user database", "error", err)
 	}
 
-	if err := users.initSchema(); err != nil {
+	defer users.Close()
+
+	if err := users.InitSchema(); err != nil {
 		log.Fatal("Could not initialize database", "error", err)
 	}
 
