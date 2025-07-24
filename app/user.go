@@ -10,6 +10,19 @@ const (
 	RoleAdmin UserRole = 2
 )
 
+func (role UserRole) String() string {
+	switch role {
+	case RoleGuest:
+		return "guest"
+	case RoleUser:
+		return "user"
+	case RoleAdmin:
+		return "admin"
+	default:
+		return ""
+	}
+}
+
 type User struct {
 	Id         int
 	Name       string

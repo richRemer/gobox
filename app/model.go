@@ -27,6 +27,7 @@ type Model struct {
 	bg          string
 	view        appview
 	keys        KeyMap
+	user        User
 	help        help.Model
 	splashTime  int
 	mainStyle   lipgloss.Style
@@ -97,9 +98,9 @@ func (model Model) splashView() string {
 }
 
 func (model Model) statusView() string {
-	text := "Your term is %s\n"
-	text += "Your window size is x: %d, y: %d\n"
-	text += "Background: %s\n"
+	text := "Term: %s (%d x %d) [%s]\n"
+	text += "Name: " + model.user.Name + "\n"
+	text += "Role: " + model.user.Role.String() + "\n"
 	text += "Time: " + model.time.Format(time.DateTime) + "\n"
 
 	view := fmt.Sprintf(text, model.term, model.width, model.height, model.bg)

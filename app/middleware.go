@@ -48,6 +48,7 @@ func Middleware() wish.Middleware {
 			bg:          bg,
 			view:        splash,
 			keys:        ActiveKeyMap,
+			user:        session.Context().Value("user").(User),
 			help:        help.New(),
 			splashTime:  2,
 			mainStyle:   mainStyle,
