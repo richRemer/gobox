@@ -11,7 +11,7 @@ clean:
 install: $(bin)
 	cp $< $(prefix)/bin/$(name)
 
-$(bin): $(wildcard *.go)
+$(bin): $(wildcard *.go */*.go */*.sql)
 	@mkdir -p $(@D)
 	go build -o $@
 

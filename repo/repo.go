@@ -3,11 +3,13 @@ package repo
 import (
 	"database/sql"
 	_ "embed"
+	"local/gobox/app"
+	"time"
 
 	_ "modernc.org/sqlite"
 )
 
-//go:embed schema/gobox.sql
+//go:embed gobox.sql
 var schema string
 
 type UserRepo struct {
@@ -48,4 +50,75 @@ func (users UserRepo) InitSchemaIfNeeded() error {
 	default:
 		return err
 	}
+}
+
+func (users UserRepo) FindByName(name string) (app.User, error) {
+	var user app.User
+	var registered int64
+
+	query := `
+		select id, registered_at from user
+		where name = ?`
+
+	row := users.db.QueryRow(query, name)
+	err := row.Scan(&user.Id, &registered)
+
+	user.Name = name
+	user.Role = app.RoleUser
+	user.Registered = time.Unix(registered, 0)
+
+	return user, err
+}
+
+func (users UserRepo) FindByPublicKey(pem string) (app.User, error) {
+	var user app.User
+	var registered int64
+
+	query := `
+		select u.id, u.name, u.registered_at
+		from user u
+		inner join public_key k on u.id = k.user_id
+		where k.pem = ?`
+
+	row := users.db.QueryRow(query, pem)
+	err := row.Scan(&user.Id, &user.Name, &registered)
+
+	user.Role = app.RoleUser
+	user.Registered = time.Unix(registered, 0)
+
+	return user, err
+}
+
+func (users UserRepo) FindOrRegister(name string) (app.User, error) {
+	user, err := users.FindByName(name)
+
+	if err != nil {
+		user, err = users.Register(name)
+	}
+
+	return user, err
+}
+
+func (users UserRepo) Register(name string) (app.User, error) {
+	var user app.User
+	var registered int64
+
+	query := `insert into user (name) values (?)`
+	_, write_err := users.db.Exec(query, name)
+
+	if write_err != nil {
+		return user, write_err
+	}
+
+	query = `
+		select id, registered_at from user
+		where id = last_insert_rowid()`
+
+	row := users.db.QueryRow(query)
+	err := row.Scan(&user.Id, &registered)
+
+	user.Name = name
+	user.Registered = time.Unix(registered, 0)
+
+	return user, err
 }

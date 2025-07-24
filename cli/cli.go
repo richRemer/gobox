@@ -26,7 +26,7 @@ func GetOptions() Options {
 	flag.StringVar(&opts.WorkingDir, "d", cwd, "working directory")
 	flag.StringVar(&opts.KeysDir, "k", ".", "user keys directory")
 	flag.StringVar(&opts.HostKeyFile, "H", "host_key", "host key file")
-	flag.StringVar(&opts.DB, "D", ":memory:", "database name or path")
+	flag.StringVar(&opts.DB, "D", ":memory:", "database source name")
 	flag.StringVar(&opts.Host, "h", "localhost", "listen address")
 	flag.IntVar(&opts.Port, "p", 22, "listen port")
 	flag.Parse()

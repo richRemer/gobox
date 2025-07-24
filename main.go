@@ -44,7 +44,7 @@ func main() {
 	server, err := wish.NewServer(
 		wish.WithAddress(listenAddr),
 		wish.WithHostKeyPath(hostKeyFile),
-		wish.WithPublicKeyAuth(auth.Handler(keysDir)),
+		wish.WithPublicKeyAuth(auth.Handler(keysDir, users)),
 		wish.WithMiddleware(
 			app.Middleware(),
 			activeterm.Middleware(),
