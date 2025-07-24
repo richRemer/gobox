@@ -30,7 +30,7 @@ func Handler(keysDir string, users *repo.UserRepo) ssh.PublicKeyHandler {
 			user, err := users.FindByPublicKey(string(pem))
 
 			if err != nil {
-				user = app.User{Name: ctx.User(), Role: app.RoleGuest}
+				user = app.User{Role: app.RoleGuest}
 			}
 
 			ctx.SetValue("user", user)
