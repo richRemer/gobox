@@ -29,7 +29,6 @@ type Model struct {
 	keys        KeyMap
 	user        User
 	help        help.Model
-	splashTime  int
 	mainStyle   lipgloss.Style
 	infoStyle   lipgloss.Style
 	actionStyle lipgloss.Style
@@ -44,11 +43,8 @@ func (model Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case time.Time:
 		model.time = time.Time(msg)
-		model.splashTime--
-
-		if model.splashTime == 0 {
-			model.view = status
-		}
+	case CloseSplashMsg:
+		model.view = status
 	case tea.WindowSizeMsg:
 		model.height = msg.Height
 		model.width = msg.Width

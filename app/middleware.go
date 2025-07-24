@@ -23,6 +23,11 @@ func Middleware() wish.Middleware {
 			}
 		}()
 
+		go func() {
+			<-time.After(2 * time.Second)
+			program.Send(CloseSplashMsg{})
+		}()
+
 		return program
 	}
 
@@ -50,7 +55,6 @@ func Middleware() wish.Middleware {
 			keys:        ActiveKeyMap,
 			user:        session.Context().Value("user").(User),
 			help:        help.New(),
-			splashTime:  2,
 			mainStyle:   mainStyle,
 			infoStyle:   infoStyle,
 			actionStyle: actionStyle,
