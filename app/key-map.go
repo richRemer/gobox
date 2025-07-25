@@ -20,7 +20,14 @@ func (keys KeyMap) FullHelp() [][]key.Binding {
 	}
 }
 
-var ActiveKeyMap = KeyMap{
+var SplashKeyMap = KeyMap{
+	Quit: key.NewBinding(
+		key.WithKeys("q", "ctrl+c"),
+		key.WithHelp("q", "quit"),
+	),
+}
+
+var DefaultKeyMap = KeyMap{
 	Help: key.NewBinding(
 		key.WithKeys("?"),
 		key.WithHelp("?", "help"),

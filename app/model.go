@@ -45,6 +45,7 @@ func (model Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		model.time = time.Time(msg)
 	case CloseSplashMsg:
 		model.view = status
+		model.keys = DefaultKeyMap
 	case tea.WindowSizeMsg:
 		model.height = msg.Height
 		model.width = msg.Width
