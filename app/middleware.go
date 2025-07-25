@@ -51,7 +51,7 @@ func Middleware() wish.Middleware {
 			height:      pty.Window.Height,
 			time:        time.Now(),
 			bg:          bg,
-			view:        splash,
+			view:        SplashView,
 			keys:        SplashKeyMap,
 			user:        session.Context().Value("user").(User),
 			help:        help.New(),

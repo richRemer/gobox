@@ -11,11 +11,12 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-type appview int
+type ViewMode int
 
 const (
-	splash appview = 1
-	status appview = 2
+	SplashView ViewMode = 1
+	StatusView ViewMode = 2
+	GuestView  ViewMode = 3
 )
 
 type Model struct {
@@ -25,7 +26,7 @@ type Model struct {
 	height      int
 	time        time.Time
 	bg          string
-	view        appview
+	view        ViewMode
 	keys        KeyMap
 	user        User
 	help        help.Model
@@ -44,8 +45,7 @@ func (model Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case time.Time:
 		model.time = time.Time(msg)
 	case CloseSplashMsg:
-		model.view = status
-		model.keys = DefaultKeyMap
+		model.SelectDefaultView()
 	case tea.WindowSizeMsg:
 		model.height = msg.Height
 		model.width = msg.Width
@@ -64,12 +64,35 @@ func (model Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (model Model) View() string {
 	switch model.view {
-	case splash:
+	case SplashView:
 		return model.splashView()
-	case status:
+	case StatusView:
 		return model.layoutView(model.statusView())
+	case GuestView:
+		return model.layoutView(model.guestView())
 	default:
 		return "missing view"
+	}
+}
+
+func (model *Model) SelectDefaultView() {
+	if model.user.Role == RoleGuest {
+		model.SelectView(GuestView)
+	} else {
+		model.SelectView(StatusView)
+	}
+}
+
+func (model *Model) SelectView(view ViewMode) {
+	model.view = view
+
+	switch model.view {
+	case GuestView:
+		model.keys = GuestKeyMap
+	case SplashView:
+		model.keys = SplashKeyMap
+	default:
+		model.keys = DefaultKeyMap
 	}
 }
 
@@ -92,6 +115,14 @@ func (model Model) splashView() string {
 	version := model.infoStyle.Render("v" + model.version)
 
 	return lipgloss.Place(model.width, model.height, 0.5, 0.5, title+" "+version)
+}
+
+func (model Model) guestView() string {
+	text := "Welcome to my house!\n"
+	text += "Enter freely.\n"
+	text += "Go safely, and leave something of the happiness you bring.\n"
+
+	return lipgloss.Place(model.width, 3, 0.5, 0.5, text)
 }
 
 func (model Model) statusView() string {
