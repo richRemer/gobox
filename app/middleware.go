@@ -57,10 +57,7 @@ func Middleware() wish.Middleware {
 			infoStyle:   infoStyle,
 			actionStyle: actionStyle,
 			helpStyle:   helpStyle,
-		}
-
-		// sets view, keys, and helpHeight properties
-		model.SelectView(SplashView)
+		}.WithView(SplashView)
 
 		model.help.Styles.Ellipsis = infoStyle
 		model.help.Styles.FullDesc = infoStyle

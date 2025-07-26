@@ -45,7 +45,7 @@ func (model Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case time.Time:
 		model.time = time.Time(msg)
 	case CloseSplashMsg:
-		model.SelectDefaultView()
+		model = model.WithDefaultView()
 	case tea.WindowSizeMsg:
 		model.height = msg.Height
 		model.width = msg.Width
@@ -75,15 +75,15 @@ func (model Model) View() string {
 	}
 }
 
-func (model *Model) SelectDefaultView() {
+func (model Model) WithDefaultView() Model {
 	if model.user.Role == RoleGuest {
-		model.SelectView(GuestView)
+		return model.WithView(GuestView)
 	} else {
-		model.SelectView(StatusView)
+		return model.WithView(StatusView)
 	}
 }
 
-func (model *Model) SelectView(view ViewMode) {
+func (model Model) WithView(view ViewMode) Model {
 	model.view = view
 
 	switch model.view {
@@ -97,7 +97,10 @@ func (model *Model) SelectView(view ViewMode) {
 
 	fullHelp := model.help
 	fullHelp.ShowAll = true
+
 	model.helpHeight = lipgloss.Height(fullHelp.View(model.keys)) + 1
+
+	return model
 }
 
 func (model Model) layoutView(inner string) string {
