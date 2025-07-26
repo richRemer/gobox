@@ -51,8 +51,6 @@ func Middleware() wish.Middleware {
 			height:      pty.Window.Height,
 			time:        time.Now(),
 			bg:          bg,
-			view:        SplashView,
-			keys:        SplashKeyMap,
 			user:        session.Context().Value("user").(User),
 			help:        help.New(),
 			mainStyle:   mainStyle,
@@ -60,6 +58,9 @@ func Middleware() wish.Middleware {
 			actionStyle: actionStyle,
 			helpStyle:   helpStyle,
 		}
+
+		// sets view, keys, and helpHeight properties
+		model.SelectView(SplashView)
 
 		model.help.Styles.Ellipsis = infoStyle
 		model.help.Styles.FullDesc = infoStyle

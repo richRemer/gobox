@@ -29,6 +29,7 @@ type Model struct {
 	keys        KeyMap
 	user        User
 	help        help.Model
+	helpHeight  int
 	mainStyle   lipgloss.Style
 	infoStyle   lipgloss.Style
 	actionStyle lipgloss.Style
@@ -93,6 +94,10 @@ func (model *Model) SelectView(view ViewMode) {
 	default:
 		model.keys = DefaultKeyMap
 	}
+
+	fullHelp := model.help
+	fullHelp.ShowAll = true
+	model.helpHeight = lipgloss.Height(fullHelp.View(model.keys)) + 1
 }
 
 func (model Model) layoutView(inner string) string {
@@ -105,8 +110,9 @@ func (model Model) layoutView(inner string) string {
 
 func (model Model) helpView() string {
 	help := model.help.View(model.keys)
+	view := model.helpStyle.Render(lipgloss.PlaceHorizontal(model.width, 0.5, help))
 
-	return model.helpStyle.Render(lipgloss.Place(model.width, 1, 0.5, 0.5, help))
+	return lipgloss.PlaceVertical(model.helpHeight, 1.0, view)
 }
 
 func (model Model) splashView() string {
