@@ -2,7 +2,6 @@ package app
 
 import (
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/charmbracelet/bubbles/help"
@@ -98,10 +97,10 @@ func (model *Model) SelectView(view ViewMode) {
 
 func (model Model) layoutView(inner string) string {
 	help := model.helpView()
-	padSize := model.height - strings.Count(inner, "\n") - strings.Count(help, "\n") - 1
-	padding := strings.Repeat("\n", padSize)
+	height := model.height - lipgloss.Height(help)
+	main := lipgloss.Place(model.width, height, 0.5, 0.5, inner)
 
-	return inner + padding + help
+	return lipgloss.JoinVertical(lipgloss.Center, main, help)
 }
 
 func (model Model) helpView() string {
@@ -120,7 +119,7 @@ func (model Model) splashView() string {
 func (model Model) guestView() string {
 	text := "Welcome to my house!\n"
 	text += "Enter freely.\n"
-	text += "Go safely, and leave something of the happiness you bring.\n"
+	text += "Go safely, and leave something of the happiness you bring."
 
 	return lipgloss.Place(model.width, 3, 0.5, 0.5, text)
 }
@@ -129,7 +128,7 @@ func (model Model) statusView() string {
 	text := "Term: %s (%d x %d) [%s]\n"
 	text += "Name: " + model.user.Name + "\n"
 	text += "Role: " + model.user.Role.String() + "\n"
-	text += "Time: " + model.time.Format(time.DateTime) + "\n"
+	text += "Time: " + model.time.Format(time.DateTime)
 
 	view := fmt.Sprintf(text, model.term, model.width, model.height, model.bg)
 
