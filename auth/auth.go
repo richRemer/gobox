@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"encoding/base64"
 	"errors"
 	"io/fs"
 	"local/gobox/app"
@@ -15,7 +16,7 @@ import (
 func Handler(keysDir string, users *repo.UserRepo) ssh.PublicKeyHandler {
 	return func(ctx ssh.Context, key ssh.PublicKey) bool {
 		keyFile := filepath.Join(keysDir, ctx.User()+"_keys")
-		pem := key.Marshal()
+		pem := base64.StdEncoding.EncodeToString(key.Marshal())
 
 		if loginAdmin(keyFile, key) {
 			user, err := users.FindOrRegister(ctx.User())
@@ -27,7 +28,7 @@ func Handler(keysDir string, users *repo.UserRepo) ssh.PublicKeyHandler {
 			user.Role = app.RoleAdmin
 			ctx.SetValue("user", user)
 		} else {
-			user, err := users.FindByPublicKey(string(pem))
+			user, err := users.FindByPublicKey(pem)
 
 			if err != nil {
 				user = app.User{}
@@ -36,7 +37,7 @@ func Handler(keysDir string, users *repo.UserRepo) ssh.PublicKeyHandler {
 			ctx.SetValue("user", user)
 		}
 
-		ctx.SetValue("publicKey", string(pem))
+		ctx.SetValue("publicKey", pem)
 
 		return true
 	}

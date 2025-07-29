@@ -116,25 +116,6 @@ func (users UserRepo) Register(name string) (app.User, error) {
 	user.Registered = time.Unix(registered, 0)
 
 	return user, err
-
-	// query := `insert into user (name) values (?)`
-	// _, write_err := users.db.Exec(query, name)
-
-	// if write_err != nil {
-	// 	return user, write_err
-	// }
-
-	// query = `
-	// 	select id, registered_at from user
-	// 	where id = last_insert_rowid()`
-
-	// row := users.db.QueryRow(query)
-	// err := row.Scan(&user.Id, &registered)
-
-	// user.Name = name
-	// user.Registered = time.Unix(registered, 0)
-
-	// return user, err
 }
 
 func (users UserRepo) RegisterWithKey(name string, pem string) (app.User, error) {
@@ -145,7 +126,7 @@ func (users UserRepo) RegisterWithKey(name string, pem string) (app.User, error)
 	query := `
 		begin;
 
-		insert into user (name) values (?);
+		insert into user (name) values (:name);
 
 		create table temp.t as
 		select id, registered_at from user
@@ -153,13 +134,15 @@ func (users UserRepo) RegisterWithKey(name string, pem string) (app.User, error)
 
 		with inserted (id) as (select id from temp.t limit 1)
 		insert into public_key (user_id, pem)
-		select id, ? from inserted;
+		select id, :pem from inserted;
 
 		select * from temp.t;
 
 		commit;`
 
-	rows, err := users.db.Query(query, name, pem)
+	paramName := sql.Named("name", name)
+	paramPem := sql.Named("pem", pem)
+	rows, err := users.db.Query(query, paramName, paramPem)
 
 	if err != nil {
 		return user, err
