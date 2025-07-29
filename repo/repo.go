@@ -103,22 +103,85 @@ func (users UserRepo) Register(name string) (app.User, error) {
 	var user app.User
 	var registered int64
 
-	query := `insert into user (name) values (?)`
-	_, write_err := users.db.Exec(query, name)
+	query := `
+		insert into user (name) values (?);
 
-	if write_err != nil {
-		return user, write_err
-	}
-
-	query = `
 		select id, registered_at from user
-		where id = last_insert_rowid()`
+		where id = last_insert_rowid();`
 
-	row := users.db.QueryRow(query)
+	row := users.db.QueryRow(query, name)
 	err := row.Scan(&user.Id, &registered)
 
 	user.Name = name
 	user.Registered = time.Unix(registered, 0)
 
 	return user, err
+
+	// query := `insert into user (name) values (?)`
+	// _, write_err := users.db.Exec(query, name)
+
+	// if write_err != nil {
+	// 	return user, write_err
+	// }
+
+	// query = `
+	// 	select id, registered_at from user
+	// 	where id = last_insert_rowid()`
+
+	// row := users.db.QueryRow(query)
+	// err := row.Scan(&user.Id, &registered)
+
+	// user.Name = name
+	// user.Registered = time.Unix(registered, 0)
+
+	// return user, err
+}
+
+func (users UserRepo) RegisterWithKey(name string, pem string) (app.User, error) {
+	var user app.User
+	var registered int64
+	var err error
+
+	query := `
+		begin;
+
+		insert into user (name) values (?);
+
+		create table temp.t as
+		select id, registered_at from user
+		where id = last_insert_rowid();
+
+		with inserted (id) as (select id from temp.t limit 1)
+		insert into public_key (user_id, pem)
+		select id, ? from inserted;
+
+		select * from temp.t;
+
+		commit;`
+
+	rows, err := users.db.Query(query, name, pem)
+
+	if err != nil {
+		return user, err
+	}
+
+	for rows.NextResultSet() {
+		if rows.Next() {
+			err = rows.Scan(&user.Id, registered)
+			break
+		}
+	}
+
+	if err != nil {
+		users.db.Exec("rollback")
+		return user, err
+	} else {
+		users.db.Exec("drop table temp.t")
+	}
+
+	user.Name = name
+	user.Registered = time.Unix(registered, 0)
+	user.Role = app.RoleUser
+
+	return user, nil
 }

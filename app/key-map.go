@@ -3,6 +3,8 @@ package app
 import "github.com/charmbracelet/bubbles/key"
 
 type KeyMap struct {
+	Cancel   key.Binding
+	Confirm  key.Binding
 	Help     key.Binding
 	Quit     key.Binding
 	Register key.Binding
@@ -15,7 +17,7 @@ func (keys KeyMap) ShortHelp() []key.Binding {
 func (keys KeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
 		{keys.Register, keys.Quit},
-		{keys.Help},
+		{keys.Confirm, keys.Cancel, keys.Help},
 	}
 }
 
@@ -29,6 +31,17 @@ var GuestKeyMap = KeyMap{
 	Register: key.NewBinding(
 		key.WithKeys("r"),
 		key.WithHelp("r", "register"),
+	),
+}
+
+var RegisterKeyMap = KeyMap{
+	Cancel: key.NewBinding(
+		key.WithKeys("esc"),
+		key.WithHelp("esc", "cancel"),
+	),
+	Confirm: key.NewBinding(
+		key.WithKeys("enter"),
+		key.WithHelp("enter", "done"),
 	),
 }
 

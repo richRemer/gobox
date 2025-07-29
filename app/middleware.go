@@ -12,7 +12,7 @@ import (
 	"github.com/muesli/termenv"
 )
 
-func Middleware() wish.Middleware {
+func Middleware(users UserRepo) wish.Middleware {
 	program := func(model tea.Model, options ...tea.ProgramOption) *tea.Program {
 		program := tea.NewProgram(model, options...)
 
@@ -38,6 +38,7 @@ func Middleware() wish.Middleware {
 		infoStyle := renderer.NewStyle().Foreground(lipgloss.Color("8"))
 		actionStyle := renderer.NewStyle().Bold(true).Foreground(lipgloss.Color("15"))
 		helpStyle := renderer.NewStyle().Border(lipgloss.NormalBorder(), true, false, false)
+		inputStyle := renderer.NewStyle().Border(lipgloss.NormalBorder(), true)
 		bg := "light"
 
 		if renderer.HasDarkBackground() {
@@ -52,11 +53,15 @@ func Middleware() wish.Middleware {
 			time:        time.Now(),
 			bg:          bg,
 			user:        session.Context().Value("user").(User),
+			publicKey:   session.Context().Value("publicKey").(string),
 			help:        help.New(),
+			err:         nil,
+			users:       users,
 			mainStyle:   mainStyle,
 			infoStyle:   infoStyle,
 			actionStyle: actionStyle,
 			helpStyle:   helpStyle,
+			inputStyle:  inputStyle,
 		}.WithView(SplashView)
 
 		model.help.Styles.Ellipsis = infoStyle

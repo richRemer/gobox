@@ -46,7 +46,7 @@ func main() {
 		wish.WithHostKeyPath(hostKeyFile),
 		wish.WithPublicKeyAuth(auth.Handler(keysDir, users)),
 		wish.WithMiddleware(
-			app.Middleware(),
+			app.Middleware(users),
 			activeterm.Middleware(),
 			logging.Middleware(),
 			elapsed.Middleware(),

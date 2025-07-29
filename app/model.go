@@ -6,16 +6,19 @@ import (
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
+	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/log"
 )
 
 type ViewMode int
 
 const (
-	SplashView ViewMode = 1
-	StatusView ViewMode = 2
-	GuestView  ViewMode = 3
+	SplashView   ViewMode = 1
+	StatusView   ViewMode = 2
+	GuestView    ViewMode = 3
+	RegisterView ViewMode = 4
 )
 
 type Model struct {
@@ -28,12 +31,17 @@ type Model struct {
 	view        ViewMode
 	keys        KeyMap
 	user        User
+	publicKey   string
 	help        help.Model
+	input       textinput.Model
+	err         error
+	users       UserRepo
 	helpHeight  int
 	mainStyle   lipgloss.Style
 	infoStyle   lipgloss.Style
 	actionStyle lipgloss.Style
 	helpStyle   lipgloss.Style
+	inputStyle  lipgloss.Style
 }
 
 func (model Model) Init() tea.Cmd {
@@ -41,6 +49,8 @@ func (model Model) Init() tea.Cmd {
 }
 
 func (model Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var cmd tea.Cmd = nil
+
 	switch msg := msg.(type) {
 	case time.Time:
 		model.time = time.Time(msg)
@@ -52,14 +62,37 @@ func (model Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		model.help.Width = msg.Width
 	case tea.KeyMsg:
 		switch {
+		case key.Matches(msg, model.keys.Cancel):
+			model = model.WithDefaultView()
+			return model, nil
+		case key.Matches(msg, model.keys.Confirm):
+			nick := model.input.Value()
+			user, err := model.users.RegisterWithKey(nick, model.publicKey)
+
+			if err == nil {
+				model.user = user
+				model = model.WithDefaultView()
+				log.Info("registered user", "nick", nick)
+			} else {
+				log.Error("registration failed", "nick", nick, "err", err)
+				model.err = err
+			}
+
+			return model, nil
 		case key.Matches(msg, model.keys.Help):
 			model.help.ShowAll = !model.help.ShowAll
+			return model, nil
 		case key.Matches(msg, model.keys.Quit):
 			return model, tea.Quit
+		case key.Matches(msg, model.keys.Register):
+			model = model.WithView(RegisterView)
+			return model, nil
 		}
 	}
 
-	return model, nil
+	model.input, cmd = model.input.Update(msg)
+
+	return model, cmd
 }
 
 func (model Model) View() string {
@@ -70,6 +103,8 @@ func (model Model) View() string {
 		return model.layoutView(model.statusView())
 	case GuestView:
 		return model.layoutView(model.guestView())
+	case RegisterView:
+		return model.registerView()
 	default:
 		return "missing view"
 	}
@@ -91,6 +126,14 @@ func (model Model) WithView(view ViewMode) Model {
 		model.keys = GuestKeyMap
 	case SplashView:
 		model.keys = SplashKeyMap
+	case RegisterView:
+		model.keys = RegisterKeyMap
+		model.input = textinput.New()
+		model.input.Placeholder = "Nickname"
+		model.input.CharLimit = 32
+		model.input.Width = 24
+		model.input.Cursor.Blink = true
+		model.input.Focus()
 	default:
 		model.keys = DefaultKeyMap
 	}
@@ -131,6 +174,12 @@ func (model Model) guestView() string {
 	text += "Go safely, and leave something of the happiness you bring."
 
 	return lipgloss.Place(model.width, 3, 0.5, 0.5, text)
+}
+
+func (model Model) registerView() string {
+	nick := model.inputStyle.Render(model.input.View())
+
+	return lipgloss.Place(model.width, model.height, 0.5, 0.5, nick)
 }
 
 func (model Model) statusView() string {

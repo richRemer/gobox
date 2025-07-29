@@ -15,6 +15,7 @@ import (
 func Handler(keysDir string, users *repo.UserRepo) ssh.PublicKeyHandler {
 	return func(ctx ssh.Context, key ssh.PublicKey) bool {
 		keyFile := filepath.Join(keysDir, ctx.User()+"_keys")
+		pem := key.Marshal()
 
 		if loginAdmin(keyFile, key) {
 			user, err := users.FindOrRegister(ctx.User())
@@ -26,15 +27,16 @@ func Handler(keysDir string, users *repo.UserRepo) ssh.PublicKeyHandler {
 			user.Role = app.RoleAdmin
 			ctx.SetValue("user", user)
 		} else {
-			pem := key.Marshal()
 			user, err := users.FindByPublicKey(string(pem))
 
 			if err != nil {
-				user = app.User{Role: app.RoleGuest}
+				user = app.User{}
 			}
 
 			ctx.SetValue("user", user)
 		}
+
+		ctx.SetValue("publicKey", string(pem))
 
 		return true
 	}
