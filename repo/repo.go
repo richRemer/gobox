@@ -144,14 +144,12 @@ func (users UserRepo) RegisterWithKey(name string, pem string) (app.User, error)
 	paramPem := sql.Named("pem", pem)
 	rows, err := users.db.Query(query, paramName, paramPem)
 
-	if err != nil {
-		return user, err
-	}
-
-	for rows.NextResultSet() {
-		if rows.Next() {
-			err = rows.Scan(&user.Id, registered)
-			break
+	if err == nil {
+		for rows.NextResultSet() {
+			if rows.Next() {
+				err = rows.Scan(&user.Id, registered)
+				break
+			}
 		}
 	}
 
