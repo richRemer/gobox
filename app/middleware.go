@@ -28,10 +28,6 @@ func Middleware(users UserRepo) wish.Middleware {
 			program.Send(CloseSplashMsg{})
 		}()
 
-		go func() {
-			program.Send(ProgramMsg{program: program})
-		}()
-
 		return program
 	}
 
@@ -73,7 +69,7 @@ func Middleware(users UserRepo) wish.Middleware {
 			height:  1,
 			style:   errorStyle,
 			current: nil,
-			pending: make(chan error),
+			pending: make(chan error, MaxErrors),
 		}
 
 		model.help.Styles = help.Styles{
@@ -87,9 +83,8 @@ func Middleware(users UserRepo) wish.Middleware {
 		}
 
 		options := append(bubbletea.MakeOptions(session), tea.WithAltScreen())
-		model.program = run(model, options...)
 
-		return model.program
+		return run(model, options...)
 	}
 
 	return bubbletea.MiddlewareWithProgramHandler(handler, termenv.ANSI256)

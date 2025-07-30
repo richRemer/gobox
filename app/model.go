@@ -22,7 +22,6 @@ const (
 )
 
 type Model struct {
-	program     *tea.Program
 	version     string
 	term        string
 	width       int
@@ -58,8 +57,6 @@ func (model Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		model.time = time.Time(msg)
 	case CloseSplashMsg:
 		model = model.WithDefaultView()
-	case ProgramMsg:
-		model.program = msg.program
 	case tea.WindowSizeMsg:
 		model.height = msg.Height
 		model.width = msg.Width

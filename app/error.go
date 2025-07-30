@@ -7,8 +7,9 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+const MaxErrors = 8
+
 type ErrorModel struct {
-	program *tea.Program
 	width   int
 	height  int
 	style   lipgloss.Style
@@ -27,19 +28,17 @@ func (model ErrorModel) Update(msg tea.Msg) (ErrorModel, tea.Cmd) {
 		select {
 		case err := <-model.pending:
 			model.current = err
-			go model.clearErrors()
+			return model, tick()
 		default:
 			model.current = nil
 		}
 	case ErrorMsg:
 		if model.current == nil {
 			model.current = msg.err
-			go model.clearErrors()
+			return model, tick()
 		} else {
 			model.pending <- msg.err
 		}
-	case ProgramMsg:
-		model.program = msg.program
 	}
 
 	return model, nil
@@ -54,7 +53,9 @@ func (model ErrorModel) View() string {
 	}
 }
 
-func (model ErrorModel) clearErrors() {
-	<-time.After(3 * time.Second)
-	model.program.Send(ClearErrorMsg{})
+func tick() tea.Cmd {
+	return func() tea.Msg {
+		<-time.After(3 * time.Second)
+		return ClearErrorMsg{}
+	}
 }
