@@ -22,6 +22,7 @@ const (
 )
 
 type Model struct {
+	program     *tea.Program
 	version     string
 	term        string
 	width       int
@@ -34,7 +35,7 @@ type Model struct {
 	publicKey   string
 	help        help.Model
 	input       textinput.Model
-	err         error
+	errors      ErrorModel
 	users       UserRepo
 	helpHeight  int
 	mainStyle   lipgloss.Style
@@ -49,6 +50,7 @@ func (model Model) Init() tea.Cmd {
 }
 
 func (model Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var cmds []tea.Cmd
 	var cmd tea.Cmd = nil
 
 	switch msg := msg.(type) {
@@ -56,6 +58,8 @@ func (model Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		model.time = time.Time(msg)
 	case CloseSplashMsg:
 		model = model.WithDefaultView()
+	case ProgramMsg:
+		model.program = msg.program
 	case tea.WindowSizeMsg:
 		model.height = msg.Height
 		model.width = msg.Width
@@ -70,15 +74,14 @@ func (model Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			user, err := model.users.RegisterWithKey(nick, model.publicKey)
 
 			if err == nil {
+				log.Info("registration", "nick", nick)
 				model.user = user
 				model = model.WithDefaultView()
-				log.Info("registered user", "nick", nick)
+				return model, nil
 			} else {
 				log.Error("registration failed", "nick", nick, "err", err)
-				model.err = err
+				return model, func() tea.Msg { return ErrorMsg{err: err} }
 			}
-
-			return model, nil
 		case key.Matches(msg, model.keys.Help):
 			model.help.ShowAll = !model.help.ShowAll
 			return model, nil
@@ -90,9 +93,13 @@ func (model Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	}
 
-	model.input, cmd = model.input.Update(msg)
+	model.errors, cmd = model.errors.Update(msg)
+	cmds = append(cmds, cmd)
 
-	return model, cmd
+	model.input, cmd = model.input.Update(msg)
+	cmds = append(cmds, cmd)
+
+	return model, tea.Batch(cmds...)
 }
 
 func (model Model) View() string {
@@ -148,10 +155,11 @@ func (model Model) WithView(view ViewMode) Model {
 
 func (model Model) layoutView(inner string) string {
 	help := model.helpView()
-	height := model.height - lipgloss.Height(help)
+	errors := model.errorView()
+	height := model.height - lipgloss.Height(help) - lipgloss.Height(errors)
 	main := lipgloss.Place(model.width, height, 0.5, 0.5, inner)
 
-	return lipgloss.JoinVertical(lipgloss.Center, main, help)
+	return lipgloss.JoinVertical(lipgloss.Center, errors, main, help)
 }
 
 func (model Model) helpView() string {
@@ -159,6 +167,13 @@ func (model Model) helpView() string {
 	view := model.helpStyle.Render(lipgloss.PlaceHorizontal(model.width, 0.5, help))
 
 	return lipgloss.PlaceVertical(model.helpHeight, 1.0, view)
+}
+
+func (model Model) errorView() string {
+	errors := model.errors.View()
+	view := lipgloss.Place(model.width, 1, 0.5, 0.5, errors)
+
+	return view
 }
 
 func (model Model) splashView() string {
