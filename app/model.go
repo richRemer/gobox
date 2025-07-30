@@ -104,7 +104,7 @@ func (model Model) View() string {
 	case GuestView:
 		return model.layoutView(model.guestView())
 	case RegisterView:
-		return model.registerView()
+		return model.layoutView(model.registerView())
 	default:
 		return "missing view"
 	}
@@ -177,9 +177,7 @@ func (model Model) guestView() string {
 }
 
 func (model Model) registerView() string {
-	nick := model.inputStyle.Render(model.input.View())
-
-	return lipgloss.Place(model.width, model.height, 0.5, 0.5, nick)
+	return model.inputStyle.Render(model.input.View())
 }
 
 func (model Model) statusView() string {
