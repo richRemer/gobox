@@ -13,7 +13,7 @@ import (
 )
 
 func Middleware(users UserRepo) wish.Middleware {
-	program := func(model tea.Model, options ...tea.ProgramOption) *tea.Program {
+	run := func(model tea.Model, options ...tea.ProgramOption) *tea.Program {
 		program := tea.NewProgram(model, options...)
 
 		go func() {
@@ -39,6 +39,7 @@ func Middleware(users UserRepo) wish.Middleware {
 		actionStyle := renderer.NewStyle().Bold(true).Foreground(lipgloss.Color("15"))
 		helpStyle := renderer.NewStyle().Border(lipgloss.NormalBorder(), true, false, false)
 		inputStyle := renderer.NewStyle().Border(lipgloss.NormalBorder(), true)
+		errorStyle := renderer.NewStyle().Bold(true).Foreground(lipgloss.Color("1"))
 		bg := "light"
 
 		if renderer.HasDarkBackground() {
@@ -55,7 +56,6 @@ func Middleware(users UserRepo) wish.Middleware {
 			user:        session.Context().Value("user").(User),
 			publicKey:   session.Context().Value("publicKey").(string),
 			help:        help.New(),
-			err:         nil,
 			users:       users,
 			mainStyle:   mainStyle,
 			infoStyle:   infoStyle,
@@ -64,17 +64,27 @@ func Middleware(users UserRepo) wish.Middleware {
 			inputStyle:  inputStyle,
 		}.WithView(SplashView)
 
-		model.help.Styles.Ellipsis = infoStyle
-		model.help.Styles.FullDesc = infoStyle
-		model.help.Styles.FullKey = actionStyle
-		model.help.Styles.FullSeparator = infoStyle
-		model.help.Styles.ShortDesc = infoStyle
-		model.help.Styles.ShortKey = actionStyle
-		model.help.Styles.ShortSeparator = infoStyle
+		model.errors = ErrorModel{
+			width:   pty.Window.Width,
+			height:  1,
+			style:   errorStyle,
+			current: nil,
+			pending: make(chan error, MaxErrors),
+		}
+
+		model.help.Styles = help.Styles{
+			Ellipsis:       infoStyle,
+			FullDesc:       infoStyle,
+			FullKey:        actionStyle,
+			FullSeparator:  infoStyle,
+			ShortDesc:      infoStyle,
+			ShortKey:       actionStyle,
+			ShortSeparator: infoStyle,
+		}
 
 		options := append(bubbletea.MakeOptions(session), tea.WithAltScreen())
 
-		return program(model, options...)
+		return run(model, options...)
 	}
 
 	return bubbletea.MiddlewareWithProgramHandler(handler, termenv.ANSI256)
