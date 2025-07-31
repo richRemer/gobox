@@ -1,13 +1,61 @@
 package app
 
 import (
+	"database/sql"
+	"errors"
+	"strings"
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"modernc.org/sqlite"
 )
 
 const MaxErrors = 8
+
+type WrappedError struct {
+	message string
+	wrapped error
+}
+
+func (err *WrappedError) Error() string {
+	return err.message
+}
+
+func (err *WrappedError) Unwrap() error {
+	return err.wrapped
+}
+
+func wrap(err error) *WrappedError {
+	if err == nil {
+		return nil
+	} else if _, ok := err.(*WrappedError); ok {
+		return err.(*WrappedError)
+	}
+
+	var message string = "unknown error"
+
+	if sqlerr, ok := err.(*sqlite.Error); ok {
+		message = "database error"
+
+		switch sqlerr.Code() {
+		case 2067:
+			if strings.Contains(sqlerr.Error(), "user.name") {
+				message = "nick already registered"
+			} else if strings.Contains(sqlerr.Error(), "public_key.pem") {
+				message = "key in use"
+			}
+		}
+	} else if errors.Is(err, sql.ErrConnDone) {
+		message = "database connection closed"
+	} else if errors.Is(err, sql.ErrNoRows) {
+		message = "no results"
+	} else if errors.Is(err, sql.ErrTxDone) {
+		message = "database transaction closed"
+	}
+
+	return &WrappedError{message: message, wrapped: err}
+}
 
 type ErrorModel struct {
 	width   int
@@ -34,10 +82,10 @@ func (model ErrorModel) Update(msg tea.Msg) (ErrorModel, tea.Cmd) {
 		}
 	case ErrorMsg:
 		if model.current == nil {
-			model.current = msg.err
+			model.current = wrap(msg.err)
 			return model, tick()
 		} else {
-			model.pending <- msg.err
+			model.pending <- wrap(msg.err)
 		}
 	}
 
