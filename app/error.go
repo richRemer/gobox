@@ -86,6 +86,11 @@ func (model ErrorModel) Update(msg tea.Msg) (ErrorModel, tea.Cmd) {
 			return model, tick()
 		} else {
 			model.pending <- wrap(msg.err)
+
+			// ensure error buffer doesn't fill and cause lockup
+			if len(model.pending) == cap(model.pending) {
+				model.current = <-model.pending
+			}
 		}
 	}
 
