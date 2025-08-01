@@ -36,13 +36,15 @@ func (users UserRepo) InitSchema() error {
 }
 
 func (users UserRepo) InitSchemaIfNeeded() error {
+	var name string
+
 	query := `
 		select name from sqlite_master
 		where type = 'table' and name = 'user'`
 
 	row := users.db.QueryRow(query)
 
-	switch err := row.Scan(); err {
+	switch err := row.Scan(&name); err {
 	case sql.ErrNoRows:
 		return users.InitSchema()
 	case nil:
