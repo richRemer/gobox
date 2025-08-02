@@ -12,6 +12,7 @@ make
 ./gobox -p 2222 -D test.db
 
 # from another terminal, connect over SSH as 'admin' user using provided test key
+chmod 600 admin_key
 ssh -i admin_key -p 2222 admin@localhost
 # wait for splash screen to go away (this ensures write to DB has ocurred)
 # hit 'q' to exit
