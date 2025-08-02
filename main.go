@@ -22,6 +22,7 @@ import (
 	"github.com/charmbracelet/wish/activeterm"
 	"github.com/charmbracelet/wish/elapsed"
 	"github.com/charmbracelet/wish/logging"
+	gossh "golang.org/x/crypto/ssh"
 )
 
 func main() {
@@ -55,6 +56,53 @@ func main() {
 
 	if err != nil {
 		log.Error("Could not start server", "error", err)
+	}
+
+	if server.ServerConfigCallback == nil {
+		log.Info("setting config callback")
+		server.ServerConfigCallback = func(ctx ssh.Context) *gossh.ServerConfig {
+			config := &gossh.ServerConfig{}
+			return config
+		}
+	}
+
+	if server.ConnCallback == nil {
+		log.Info("setting connection callback")
+		server.ConnCallback = func(ctx ssh.Context, conn net.Conn) net.Conn {
+			log.Info("connection callback")
+			return conn
+		}
+	}
+
+	forwardHandler := &ssh.ForwardedTCPHandler{}
+
+	server.LocalPortForwardingCallback = func(ctx ssh.Context, host string, port uint32) bool {
+		log.Info("accepting local forward to %s:%d", host, port)
+		return true
+	}
+
+	server.ReversePortForwardingCallback = func(ctx ssh.Context, host string, port uint32) bool {
+		log.Info("accepting reverse forward on %s:%d", host, port)
+		return true
+	}
+
+	server.RequestHandlers = map[string]ssh.RequestHandler{
+		"default": func(ctx ssh.Context, srv *ssh.Server, req *gossh.Request) (bool, []byte) {
+			log.Info("default handler")
+			return forwardHandler.HandleSSHRequest(ctx, srv, req)
+		},
+		"forward": func(ctx ssh.Context, srv *ssh.Server, req *gossh.Request) (bool, []byte) {
+			log.Info("forward handler")
+			return forwardHandler.HandleSSHRequest(ctx, srv, req)
+		},
+		"tcpip-forward": func(ctx ssh.Context, srv *ssh.Server, req *gossh.Request) (bool, []byte) {
+			log.Info("tcpip-forward handler")
+			return forwardHandler.HandleSSHRequest(ctx, srv, req)
+		},
+		"cancel-tcpip-forward": func(ctx ssh.Context, srv *ssh.Server, req *gossh.Request) (bool, []byte) {
+			log.Info("cancel-tcpip-forward handler")
+			return forwardHandler.HandleSSHRequest(ctx, srv, req)
+		},
 	}
 
 	done := make(chan os.Signal, 1)

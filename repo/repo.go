@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	_ "embed"
 	"local/gobox/app"
+	"log"
 	"time"
 
 	_ "modernc.org/sqlite"
@@ -27,7 +28,11 @@ func OpenUsers(dsn string) (*UserRepo, error) {
 }
 
 func (users UserRepo) Close() {
-	users.db.Close()
+	if users.db == nil {
+		log.Printf("db is nil")
+	} else {
+		users.db.Close()
+	}
 }
 
 func (users UserRepo) InitSchema() error {
